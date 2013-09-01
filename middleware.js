@@ -64,7 +64,9 @@ module.exports = function( projectDir ) {
 				// don't change file path if its a CDN file
 				if ( ! /https?:\/\//.test( fileName ) ){
 					fileName = fileName.replace( carteroJson.publicDir, "" );
-					fileName = path.join(carteroJson.contextPath, fileName);
+					if(_.isString(carteroJson.contextPath)){
+						fileName = path.join(carteroJson.contextPath, fileName);
+					}
 				}
 
 				return "<script type='text/javascript' src='" + fileName + "'></script>";
@@ -75,7 +77,9 @@ module.exports = function( projectDir ) {
 				// don't change file path if its a CDN file
 				if ( ! /https?:\/\//.test( fileName ) ){
 					fileName = fileName.replace( carteroJson.publicDir, "" );
-					fileName = path.join(carteroJson.contextPath, fileName);
+					if(_.isString(carteroJson.contextPath)){
+						fileName = path.join(carteroJson.contextPath, fileName);
+					}
 				}
 
 				return "<link rel='stylesheet' href='" + fileName + "'></link>";
