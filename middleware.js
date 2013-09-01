@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  *
  * A Node.js / Express Hook for the Cartero asset manager, implemented as Express middleware.
- * 
+ *
  */
 
  var fs = require( "fs" ),
@@ -29,18 +29,18 @@ module.exports = function( projectDir ) {
 	return function( req, res, next ) {
 		var oldRender = res.render;
 
-		// for each request, wrap the render function so that we can execute our own code 
+		// for each request, wrap the render function so that we can execute our own code
 		// first to populate the `cartero_js`, `cartero_css`, and `cartero_tmpl` variables.
 		res.render = function( name, options ) {
 			var _arguments = arguments;
 			var parcelName;
-			
+
 			if( options && options.cartero_parcel ) parcelName = options.cartero_parcel;
 			else {
 				var app = req.app;
 				var absolutePath;
 				var existsSync = fs.existsSync ? fs.existsSync : path.existsSync;
-				
+
 				// try to find the absolute path of the template by resolving it against the views folder
 				absolutePath = path.resolve( app.get( "views" ), name );
 				if( ! existsSync( absolutePath ) ) {
@@ -62,17 +62,21 @@ module.exports = function( projectDir ) {
 
 			res.locals.cartero_js = _.map( parcelMetadata.js, function( fileName ) {
 				// don't change file path if its a CDN file
-				if ( ! /https?:\/\//.test( fileName ) )
+				if ( ! /https?:\/\//.test( fileName ) ){
 					fileName = fileName.replace( carteroJson.publicDir, "" );
+					fileName = path.join(carteroJson.contextPath, fileName);
+				}
 
 				return "<script type='text/javascript' src='" + fileName + "'></script>";
-				
+
 			} ).join( "" );
 
 			res.locals.cartero_css = _.map( parcelMetadata.css, function( fileName ) {
 				// don't change file path if its a CDN file
-				if ( ! /https?:\/\//.test( fileName ) )
+				if ( ! /https?:\/\//.test( fileName ) ){
 					fileName = fileName.replace( carteroJson.publicDir, "" );
+					fileName = path.join(carteroJson.contextPath, fileName);
+				}
 
 				return "<link rel='stylesheet' href='" + fileName + "'></link>";
 
