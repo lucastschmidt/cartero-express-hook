@@ -6,7 +6,7 @@
  * Licensed under the MIT license.
  *
  * A Node.js / Express Hook for the Cartero asset manager, implemented as Express middleware.
- * 
+ *
  */
 
  var fs = require( "fs" ),
@@ -29,25 +29,25 @@ module.exports = function( projectDir ) {
 	return function( req, res, next ) {
 		var oldRender = res.render;
 
-		// for each request, wrap the render function so that we can execute our own code 
+		// for each request, wrap the render function so that we can execute our own code
 		// first to populate the `cartero_js`, `cartero_css`, and `cartero_tmpl` variables.
 		res.render = function( name, options ) {
 			var _arguments = arguments;
 			var parcelName;
-			
+
 			if( options && options.cartero_parcel ) parcelName = options.cartero_parcel;
 			else {
 				var app = req.app;
 				var absolutePath;
 				var existsSync = fs.existsSync ? fs.existsSync : path.existsSync;
-				
+
 				// try to find the absolute path of the template by resolving it against the views folder
 				absolutePath = path.resolve( app.get( "views" ), name );
 				if( ! existsSync( absolutePath ) ) {
 					// if that doesn't work, resolve it using same method as app.render, which adds
 					// extensions based on the view engine being used, etc.
 					var view = new View( name, {
-						defaultEngine: this.get( "view engine" ),
+						defaultEngine: app.get( "view engine" ),
 						root: app.get( "views" ),
 						engines: app.engines
 					} );
@@ -66,7 +66,7 @@ module.exports = function( projectDir ) {
 					fileName = fileName.replace( carteroJson.publicDir, "" );
 
 				return "<script type='text/javascript' src='" + fileName + "'></script>";
-				
+
 			} ).join( "" );
 
 			res.locals.cartero_css = _.map( parcelMetadata.css, function( fileName ) {
