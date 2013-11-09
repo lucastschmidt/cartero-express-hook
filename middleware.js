@@ -13,7 +13,8 @@
 	_ = require( "underscore" ),
 	path = require( "path" ),
 	async = require( "async" ),
-	View = require('express/lib/view');
+	View = require('express/lib/view'),
+	cache = {};
 
 module.exports = function( projectDir ) {
 	var carteroJson;
@@ -60,34 +61,47 @@ module.exports = function( projectDir ) {
 			var parcelMetadata = carteroJson.parcels[ parcelName ];
 			if( ! parcelMetadata ) return next( new Error( "Could not find parcel \"" + parcelName + "\" in parcel map." ) );
 
-			res.locals.cartero_js = _.map( parcelMetadata.js, function( fileName ) {
-				// don't change file path if its a CDN file
-				if ( ! /https?:\/\//.test( fileName ) && existsSync(path.join(projectDir, fileName))){
-					fileName = fileName.replace( carteroJson.publicDir, "" );
-					if(_.isString(carteroJson.contextPath)){
-						fileName = path.join(carteroJson.contextPath, fileName);
+			if (_.has(cache, parcelName) && _.has(cache[parcelName], "js")){
+				res.locals.cartero_js = cache[parcelName]['js'];
+				console.log("Found on cache js:"+parcelName);
+			} else {
+				res.locals.cartero_js = _.map( parcelMetadata.js, function( fileName ) {
+					// don't change file path if its a CDN file
+					if ( ! /https?:\/\//.test( fileName ) && existsSync(path.join(projectDir, fileName))){
+						fileName = fileName.replace( carteroJson.publicDir, "" );
+						if(_.isString(carteroJson.contextPath)){
+							fileName = path.join(carteroJson.contextPath, fileName);
+						}
 					}
-				}
 
-				return "<script type='text/javascript' src='" + fileName + "'></script>";
+					return "<script type='text/javascript' src='" + fileName + "'></script>";
 
-			} ).join( "" );
+				} ).join( "" );
+				cache[parcelName] = cache[parcelName] || {};
+				cache[parcelName]['js'] = cache[parcelName]['js'] || res.locals.cartero_js;
+			}
 
-			res.locals.cartero_css = _.map( parcelMetadata.css, function( fileName ) {
-				// don't change file path if its a CDN file
-				if ( ! /https?:\/\//.test( fileName ) && existsSync(path.join(projectDir,fileName))){
-					fileName = fileName.replace( carteroJson.publicDir, "" );
-					if(_.isString(carteroJson.contextPath)){
-						fileName = path.join(carteroJson.contextPath, fileName);
+			if (_.has(cache, parcelName) && _.has(cache[parcelName], "css")){
+				res.locals.cartero_css = cache[parcelName]['css'];
+				console.log("Found on cache css:"+parcelName);
+			} else {
+				res.locals.cartero_css = _.map( parcelMetadata.css, function( fileName ) {
+					// don't change file path if its a CDN file
+					if ( ! /https?:\/\//.test( fileName ) && existsSync(path.join(projectDir,fileName))){
+						fileName = fileName.replace( carteroJson.publicDir, "" );
+						if(_.isString(carteroJson.contextPath)){
+							fileName = path.join(carteroJson.contextPath, fileName);
+						}
 					}
-				}
 
-				return "<link rel='stylesheet' href='" + fileName + "'></link>";
+					return "<link rel='stylesheet' href='" + fileName + "'></link>";
 
-			} ).join( "" );
+				} ).join( "" );
+				cache[parcelName] = cache[parcelName] || {};
+				cache[parcelName]['css'] = cache[parcelName]['css'] || res.locals.cartero_css;
+			}
 
 			var tmplContents = "";
-
 			async.each( parcelMetadata.tmpl, function( fileName, callback ) {
 				fs.readFile( path.join( projectDir, fileName ),  function( err, data ) {
 					if( err ) {
