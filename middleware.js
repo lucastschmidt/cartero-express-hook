@@ -62,7 +62,7 @@ module.exports = function( projectDir ) {
 
 			res.locals.cartero_js = _.map( parcelMetadata.js, function( fileName ) {
 				// don't change file path if its a CDN file
-				if ( ! /https?:\/\//.test( fileName ) ){
+				if ( ! /https?:\/\//.test( fileName ) && existsSync(path.join(projectDir, fileName))){
 					fileName = fileName.replace( carteroJson.publicDir, "" );
 					if(_.isString(carteroJson.contextPath)){
 						fileName = path.join(carteroJson.contextPath, fileName);
@@ -75,7 +75,7 @@ module.exports = function( projectDir ) {
 
 			res.locals.cartero_css = _.map( parcelMetadata.css, function( fileName ) {
 				// don't change file path if its a CDN file
-				if ( ! /https?:\/\//.test( fileName ) ){
+				if ( ! /https?:\/\//.test( fileName ) && existsSync(path.join(projectDir,fileName))){
 					fileName = fileName.replace( carteroJson.publicDir, "" );
 					if(_.isString(carteroJson.contextPath)){
 						fileName = path.join(carteroJson.contextPath, fileName);
