@@ -63,7 +63,6 @@ module.exports = function( projectDir ) {
 
 			if (_.has(cache, parcelName) && _.has(cache[parcelName], "js")){
 				res.locals.cartero_js = cache[parcelName]['js'];
-				console.log("Found on cache js:"+parcelName);
 			} else {
 				res.locals.cartero_js = _.map( parcelMetadata.js, function( fileName ) {
 					// don't change file path if its a CDN file
@@ -80,7 +79,6 @@ module.exports = function( projectDir ) {
 
 			if (_.has(cache, parcelName) && _.has(cache[parcelName], "css")){
 				res.locals.cartero_css = cache[parcelName]['css'];
-				console.log("Found on cache css:"+parcelName);
 			} else {
 				res.locals.cartero_css = _.map( parcelMetadata.css, function( fileName ) {
 					// don't change file path if its a CDN file
